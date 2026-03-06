@@ -1,0 +1,33 @@
+server:
+  port: 8900
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_HOST:localhost}:27017/stock_db
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        register: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${CONSUL_INSTANCE_ID:${spring.application.name}:${server.port}}
+        catalog-services-watch-enabled: false
+
+stock:
+  fixed-value: ${STOCK_FIXED_VALUE:-1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
