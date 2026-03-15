@@ -17,25 +17,13 @@ spring:
         instance-id: ${spring.application.name}:${server.port}
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,circuitbreakers
-  health:
-    circuitbreakers:
-      enabled: true
   tracing:
     sampling:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
-
-resilience4j:
-  circuitbreaker:
-    instances:
-      stock-service-cb:
-        slidingWindowSize: 5
-        minimumNumberOfCalls: 3
-        failureRateThreshold: 50
-        waitDurationInOpenState: 5s
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+  endpoints:
+    web:
+      exposure:
+        include: health,info
