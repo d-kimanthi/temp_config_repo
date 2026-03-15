@@ -23,15 +23,19 @@ spring:
           uri: lb://stock-service
           predicates:
             - Path=/stock/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
   tracing:
     sampling:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
