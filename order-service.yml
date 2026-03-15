@@ -1,0 +1,69 @@
+server:
+  port: 8903
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${MONGODB_HOST:localhost}:27017/order_db
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  cloud:
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: ${CONSUL_PORT:8500}
+      discovery:
+        register: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 2000
+            readTimeout: 3000
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      productService:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+      stockService:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+  retry:
+    instances:
+      productService:
+        max-attempts: 3
+        wait-duration: 300ms
+        ignore-exceptions:
+          - feign.FeignException$NotFound
+          - feign.FeignException$BadRequest
+      stockService:
+        max-attempts: 3
+        wait-duration: 300ms
+        ignore-exceptions:
+          - feign.FeignException$NotFound
+          - feign.FeignException$BadRequest
+          - feign.FeignException$Conflict
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://zipkin:9411/api/v2/spans}
+  endpoints:
+    web:
+      exposure:
+        include: health,info
